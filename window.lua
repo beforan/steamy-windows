@@ -1,6 +1,5 @@
--- Dual purpose Factory / Prototype
+-- prototype
 local Window = {
-  --new window defaults (prototype properties)
   top = 0,
   left = 0,
   
@@ -13,30 +12,26 @@ local Window = {
   defaultAlign = "left",
   defaultFont = love.graphics.getFont()
 }
-Window.__index = Window --setup prototypal inheritance
+Window.__index = Window
 
-
--- Factory Method / Constructor
+-- ctor
 function Window:new (wnd)
   wnd = wnd or {}
   
   setmetatable(wnd, self)
   
   --other setup?
-  if wnd.autosize then wnd:autoSize() end -- adjust width and height if autosize requested
+  if wnd.autosize then wnd:autoSize() end
   
-  if wnd.x and not rawget(wnd, "left") then -- left overrides x
+  if wnd.x and not rawget(wnd, "left") then
     wnd:setX(wnd.x); wnd.x = nil
   end
-  if wnd.y and not rawget(wnd, "top") then -- top overrides y
+  if wnd.y and not rawget(wnd, "top") then
     wnd:setY(wnd.y); wnd.y = nil
   end
   
   return wnd
 end
-
-
--- Prototype Methods!
 
 -- Drawing
 function Window:draw()
@@ -94,6 +89,5 @@ function Window:autoSize()
     + 2*self.contentMargin -- add vertical margins
 end
 
--- Make the Factory callable and return it
 setmetatable(Window, { __call = function (self, wnd) return self:new(wnd) end})
 return Window
