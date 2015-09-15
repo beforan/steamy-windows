@@ -1,3 +1,7 @@
+local relativeFolder = (...):match("(.-)[^%.]+$") -- returns 'lib.foo.'
+
+local Content = require (relativeFolder .. "content")
+
 -- prototype
 local Window = {
   top = 0,
@@ -8,9 +12,13 @@ local Window = {
   autosize = false,
   maxwidth = love.window.getWidth() / 2,
   
-  contentMargin = 10,
-  defaultAlign = "left",
-  defaultFont = love.graphics.getFont()
+  padding = 10,
+  align = "left",
+  
+  font = love.graphics.getFont(),
+  color = { 255, 255, 255, 255 },
+  background = { 50, 90, 200, 255 },
+  shadow = { 50, 50, 50, 255 }
 }
 Window.__index = Window
 
@@ -21,6 +29,22 @@ function Window:new (wnd)
   setmetatable(wnd, self)
   
   --other setup?
+  --exply padding
+  if type(wnd.padding) == "table" then
+    wnd.padding.top = wnd.padding.top or 0
+    wnd.padding.left = wnd.padding.left or 0
+    wnd.padding.bottom = wnd.padding.bottom or wnd.padding.top
+    wnd.padding.right = wnd.padding.right or wnd.padding.left
+  else
+    wnd.padding = {
+      top = tostring(wnd.padding),
+      left = tostring(wnd.padding),
+      bottom = tostring(wnd.padding),
+      right = tostring(wnd.padding)
+    }
+  end
+  --Window:processContent()
+  
   if wnd.autosize then wnd:autoSize() end
   
   if wnd.x and not rawget(wnd, "left") then
@@ -33,26 +57,30 @@ function Window:new (wnd)
   return wnd
 end
 
+function Window:processContent()
+  return self.content:process(self)
+end
+
+
 -- Drawing
 function Window:draw()
-  self:renderBackground()
-  self:renderContent()
+  self:drawBackground()
+  self:drawContent()
 end
-function Window:renderBackground()
-  love.graphics.setColor { 60, 80, 200, 255 }
+function Window:drawBackground()
+  if not self.background then return end
+  if self.background.draw then return self.background:draw() end
+  
+  -- if background doesn't have a draw method, assume it's just a color
+  love.graphics.setColor(self.background)
   love.graphics.rectangle("fill", self.left, self.top, self.width, self.height)
 end
-function Window:renderContent()
+function Window:drawContent()
   if type(self.content) == "number" or type(self.content) == "string" then
-    return self:renderContentString()
+    self.content = Content.Text(tostring(self.content))
   end
   
-  -- Parse Content table
-end
-function Window:renderContentString()
-  love.graphics.setColor { 255, 255, 255, 255 }
-  if love.graphics.getFont() ~= self.defaultFont then love.graphics.setFont(self.defaultFont) end
-  love.graphics.printf(self.content, self.left + self.contentMargin, self.top + self.contentMargin, self.width - self.contentMargin * 2, self.defaultAlign)
+  self.content:draw(self)
 end
 
 -- Getters and Setters
@@ -79,14 +107,14 @@ function Window:setY(y) self.top = y - self.height / 2 end
 -- Helpers
 function Window:autoSize()
   -- Currently only working for TEXT content
-  local font, lines = self.defaultFont, nil
-  self.width, lines = font:getWrap(self.content, self.maxwidth - 2*self.contentMargin)
-  self.width = self.width + 2*self.contentMargin
+  local font, lines = self.font, nil
+  self.width, lines = font:getWrap(self.content, self.maxwidth - (self.padding.left + self.padding.right))
+  self.width = self.width + (self.padding.left + self.padding.right)
   
   self.height =
     (lines - 1) * (font:getHeight(self.content) * font:getLineHeight(self.content)) -- use line height for all lines except last
     + font:getHeight(self.content) -- leave last line unadjusted for line height
-    + 2*self.contentMargin -- add vertical margins
+    + (self.padding.top + self.padding.bottom) -- add vertical padding
 end
 
 setmetatable(Window, { __call = function (self, wnd) return self:new(wnd) end})

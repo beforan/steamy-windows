@@ -57,8 +57,12 @@ Property | Description
 `autosize` | Ask the window to set its `width` and `height` based on fitting its `content` (overrides `width`/`height` values if specified)
 `maxwidth` | The maximum `width` of an `autosize` window: text wrapping is forced if the `content` requires a window wider than this
 `content` | a `string` or `number` to display inside the window
-`defaultFont` | The LÖVE `Font` object used to render the `content` in this window
-`defaultAlign` | `"left"`, `"center"` or `"right"` alignment for the window `content`
-`contentMargin` | The margin inside the window, around the `content` (i.e. distance from window edge to content container edge) (default `10`)
+`align` | Default `"left"`, `"center"` or `"right"` alignment for the window `content`
+`padding` | The padding around the `content`, inside the window (i.e. distance from window edge to content container edge) (default `10`). This can also be specified granularly as a table with `top`, `left`, `bottom`, `right` properties (if not specified, `right` inherits from `left`; `bottom` inherits from `top`; `top` and `left` default to 0)
+`font` | The default LÖVE `Font` object used to render the `content` in this window
+`color` | The default color (as an RGBA table) set before rendering the `content` in this window
+`background` | The background of the window (color as an RGBA table at this time; images and gradients to come later)
+`shadow` | The default color (as an RGBA table) to use for shadow on the `content`
+
 
 That's it for now.
