@@ -1,6 +1,7 @@
 local relativeFolder = (...):match("(.-)[^%.]+$") -- returns 'lib.foo.'
 
 local Content = require (relativeFolder .. "content")
+local Background = require (relativeFolder .. "background")
 
 -- prototype
 local Window = {
@@ -68,12 +69,17 @@ function Window:draw()
   self:drawContent()
 end
 function Window:drawBackground()
-  if not self.background then return end
-  if self.background.draw then return self.background:draw() end
+  if type(self.background) ~= "table" then return end
+  if self.background.draw then return self.background:draw(self) end
   
-  -- if background doesn't have a draw method, assume it's just a color
-  love.graphics.setColor(self.background)
-  love.graphics.rectangle("fill", self.left, self.top, self.width, self.height)
+  --if it doesn't have a draw method, it's just an RGBA colour table
+  --create a background this one time, then use its draw method
+  -- so we don't maintain 2 copies of solid fill draw
+  self.background = Background {
+      style = Background.Styles.Solid,
+      color = self.background
+    }
+  self.background:draw(self)
 end
 function Window:drawContent()
   if type(self.content) == "number" or type(self.content) == "string" then

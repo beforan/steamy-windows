@@ -46,19 +46,19 @@ function Text:draw(parent)
   love.graphics.printf(self[1], parent.left + parent.padding.left, parent.top + parent.padding.top, parent.width - (parent.padding.left + parent.padding.right), self.align)
 end
 
-local Speech = {}
-Speech.__index = Speech
-function Speech:new(speech)
-  speech = speech or {}
-  setmetatable(speech, self)
-  return speech
-end
+--local Speech = {}
+--Speech.__index = Speech
+--function Speech:new(speech)
+--  speech = speech or {}
+--  setmetatable(speech, self)
+--  return speech
+--end
 
 
 --expose them all
 local content = {
-  Text = Text,
-  Speech = Speech
+  Text = Text
+  --Speech = Speech
 }
 -- Make them all callable
 for _, v in pairs(content) do

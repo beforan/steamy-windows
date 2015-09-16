@@ -13,7 +13,8 @@ Utils.GradientStyles = {
 
 --build a gradient from a spec, with colors and style information
 function Utils.createGradient(spec)
-  
+  -- we (probably) don't want to render the gradient to an mage like DvD
+  -- I would prefer to wholly fragment shader this
 end
 
 -- reduce any angle in degrees to between 0 and 359
