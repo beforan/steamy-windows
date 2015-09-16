@@ -2,6 +2,7 @@ local relativeFolder = (...):match("(.-)[^%.]+$") -- returns 'lib.foo.'
 
 local Content = require (relativeFolder .. "content")
 local Background = require (relativeFolder .. "background")
+local Border = require (relativeFolder .. "border")
 
 -- prototype
 local Window = {
@@ -19,7 +20,11 @@ local Window = {
   font = love.graphics.getFont(),
   color = { 255, 255, 255, 255 },
   background = { 50, 90, 200, 255 },
-  shadow = { 50, 50, 50, 255 }
+  shadow = false, --{ 50, 50, 50, 255 },
+  shadowoffset = 5,
+  contentshadow = { 50, 50, 50, 255 },
+  border = Border { style = Border.Styles.WeightedOutline, thickness = 9, color = { 120, 120, 120, 255 } }, --false,
+  bordershadow = false -- changes render order for Window.shadow color
 }
 Window.__index = Window
 
@@ -65,8 +70,16 @@ end
 
 -- Drawing
 function Window:draw()
+  -- If we have a border but are NOT using border shadow,
+  -- We need to draw the shadow first, to be bottom-most
+  if self.border and self.shadow and not self.bordershadow then
+    self.border:drawShadow(self)
+  end
+  
+  --normal draw order resumes
   self:drawBackground()
   self:drawContent()
+  self:drawBorder()
 end
 function Window:drawBackground()
   if type(self.background) ~= "table" then return end
@@ -87,6 +100,10 @@ function Window:drawContent()
   end
   
   self.content:draw(self)
+end
+function Window:drawBorder()
+  if type(self.border) ~= "table" then return end
+  if self.border.draw then return self.border:draw(self) end
 end
 
 -- Getters and Setters

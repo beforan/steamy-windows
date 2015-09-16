@@ -5,6 +5,14 @@ A keyboard / joypad driven Message Window / Windowed UI library for LÖVE. Suita
 Right now not much. you could use it for some Text-in-a-box UI,
 without having to handle sizing / wrapping / centering etc. yourself
 
+It does have some basic customisability:
+- Fonts
+- Text Colour
+- Background styles
+  - Transparent
+  - Solid Fill
+  - Four Corner gradients (Per-Vertex colours, interpolated across the window)
+
 Note that currently there is no input handling (no dismissing a focused window, for example) so you need to do that yourself.
 
 As it grows, it should be usable for:
@@ -61,8 +69,18 @@ Property | Description
 `padding` | The padding around the `content`, inside the window (i.e. distance from window edge to content container edge) (default `10`). This can also be specified granularly as a table with `top`, `left`, `bottom`, `right` properties (if not specified, `right` inherits from `left`; `bottom` inherits from `top`; `top` and `left` default to 0)
 `font` | The default LÖVE `Font` object used to render the `content` in this window
 `color` | The default color (as an RGBA table) set before rendering the `content` in this window
-`background` | The background of the window (color as an RGBA table at this time; images and gradients to come later)
-`shadow` | The default color (as an RGBA table) to use for shadow on the `content`
+`background` | The background of the window (color as an RGBA table, or a `Background` object, or `false` for transparent
+`shadow` | The default color (as an RGBA table) to use for shadow on the window itself, or `false` for none
+`shadowoffset` | The default offset for the window shadow
+`contentshadow` | The default color (as an RGBA table) to use for shadow on the `content`, or `false` for none
+`border` | The border of the window (a `Border` object, or `false` for none)
+`bordershadow` | Boolean. Apply the window shadow to the border (i.e. inside the window; on top of the background)
 
+Backgrounds have a number of properties that can be set by specifying them in the table passed to `Background()`:
+
+Property | Description
+:-------:|:------------
+`style` | Sets the background style to one from the enum array `Background.Styles`: `Transparent` `Solid` `FourCorner` `SimpleHorizontal` `SimpleVertical`
+`color` | Sets the colour or colours to be used in the given style. `Solid` uses the first colour, `FourCorner` uses the first 4 colours (or White if any are missing), `SimpleHorizontal` and `SimpleVertical` use the first 2 colours (or White if any are missing)
 
 That's it for now.

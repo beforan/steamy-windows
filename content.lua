@@ -37,8 +37,8 @@ end
 function Text:draw(parent)
   if love.graphics.getFont() ~= parent.font then love.graphics.setFont(parent.font) end
   
-  if parent.shadow then
-    love.graphics.setColor(parent.shadow)
+  if parent.contentshadow then
+    love.graphics.setColor(parent.contentshadow)
     love.graphics.printf(self[1], parent.left + parent.padding.left + 1, parent.top + parent.padding.top + 1, parent.width - (parent.padding.left + parent.padding.right), self.align)
   end
   

@@ -1,3 +1,7 @@
+local relativeFolder = (...):match("(.-)[^%.]+$") -- returns 'lib.foo.'
+
+local Border = require (relativeFolder .. "border")
+
 -- prototype
 local Background = {
   style = 0, --default to transparent
@@ -10,36 +14,6 @@ local Background = {
 }
 Background.__index = Background
 
-Background.Meshes = {
-  Internal = {
-    Base = love.graphics.newMesh({ -- a 10x10 square, all white, no texture, "fan" mode
-        { 0, 0, 0, 0 }, -- top left
-        { 10, 0, 1, 0 }, -- top right
-        { 10, 10, 1, 1 }, -- bottom right
-        { 0, 10, 0, 1 } -- botom left
-      })
-  },
-  Private = {
-    -- maybe?
-  },
-  Public = {
-    -- maybe maybe?
-  }
-}
-
-
--- enum of styles
-Background.Styles = {
-  Transparent = 0,
-  Solid = 1,
-  FourCorner = 2
---  Linear = 3,
---  Radial = 4,
---  Rectangle = 5,
---  StretchTexture = 6,
---  TileTexture = 7
-}
-
 function Background:new(back)
   back = back or {}
   
@@ -50,14 +24,84 @@ function Background:new(back)
   return back
 end
 
+Background.BaseMeshSize = 10
+
+Background.Meshes = {
+  Internal = {
+    Base = love.graphics.newMesh({ -- a 10x10 square, all white, no texture, "fan" mode
+        { 0, 0, 0, 0 }, -- top left
+        { Background.BaseMeshSize, 0, 1, 0 }, -- top right
+        { Background.BaseMeshSize, Background.BaseMeshSize, 1, 1 }, -- bottom right
+        { 0, Background.BaseMeshSize, 0, 1 } -- bottom left
+      })
+  },
+  Private = {
+    -- maybe?
+  },
+  Public = {
+    -- maybe maybe?
+  }
+}
+
+Background.Effects = {
+  Internal = {
+    -- FF6 style gradients ;)
+    QuantizeInterpolation = love.graphics.newShader([[ 
+      vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+        return floor(color * 30.0) / 30.0; }]])
+  },
+  Custom = {
+  }
+}
+
+
+-- enum of styles
+Background.Styles = {
+  Transparent = 0,
+  Solid = 1,
+  FourCorner = 2,
+  SimpleHorizontal = 3, -- these are shortcuts which abuse FourCorner, which is cheaper than using the
+  SimpleVertical = 4,   -- Linear method if you don't need to angle it or use multiple colour points
+--  Linear = 3,
+--  Radial = 4,
+--  Rectangle = 5,
+--  StretchTexture = 6,
+--  TileTexture = 7
+}
+
 function Background:draw(wnd)
+  if self.style == self.Styles.Transparent then return end -- return so we can't go on to have a shadow :\
+  
+  -- shadow first, so it's underneath
+  self:drawShadow(wnd)
+  
+  -- Now draw the actual window background
   if self.style == self.Styles.Solid then
     self:drawSolid(wnd)
   end
   if self.style == self.Styles.FourCorner then
     self:drawFourCorner(wnd)
   end
-  --Transparent or anything else will just return as it met no case above!
+end
+
+function Background:drawShadow(wnd)
+  if wnd.border then
+    -- don't shadow the background if there is a border - the shadow will be incorrect!
+    if wnd.border.style ~= Border.Styles.None then return end
+  end
+  
+  if wnd.shadow then
+    local mesh = self.Meshes.Internal.Base
+    if mesh:hasVertexColors() then mesh:setVertexColors(false) end -- don't use per-vertex colours!
+    
+    love.graphics.setColor(wnd.shadow)
+    love.graphics.draw(mesh,
+      wnd.left + wnd.shadowoffset,
+      wnd.top + wnd.shadowoffset,
+      0,
+      wnd.width / Background.BaseMeshSize,
+      wnd.height / Background.BaseMeshSize)
+  end
 end
 
 function Background:drawSolid(wnd)
@@ -73,7 +117,9 @@ function Background:drawSolid(wnd)
   if mesh:hasVertexColors() then mesh:setVertexColors(false) end -- don't use per-vertex colours!
   
   love.graphics.draw(mesh,
-    wnd.left, wnd.top, 0, wnd.width / 10, wnd.height / 10) -- don't like the magic numbers
+    wnd.left, wnd.top, 0,
+    wnd.width / Background.BaseMeshSize,
+    wnd.height / Background.BaseMeshSize)
 end
 
 function Background:drawFourCorner(wnd)
@@ -96,8 +142,14 @@ function Background:drawFourCorner(wnd)
     mesh:setVertex(i, x, y, u, v, r, g, b, a)
   end
   
+  love.graphics.setShader(self.Effects.Internal.QuantizeInterpolation)
+  
   love.graphics.draw(mesh,
-    wnd.left, wnd.top, 0, wnd.width / 10, wnd.height / 10) -- don't like the magic numbers
+    wnd.left, wnd.top, 0,
+    wnd.width / Background.BaseMeshSize,
+    wnd.height / Background.BaseMeshSize)
+  
+  love.graphics.setShader()
 end
 
 setmetatable(Background, { __call = function (self, back) return self:new(back) end})
