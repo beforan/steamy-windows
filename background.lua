@@ -92,7 +92,7 @@ function Background:drawShadow(wnd)
   
   if wnd.shadow then
     local mesh = self.Meshes.Internal.Base
-    if mesh:hasVertexColors() then mesh:setVertexColors(false) end -- don't use per-vertex colours!
+    if mesh:isAttributeEnabled("VertexColor") then mesh:setAttributeEnabled("VertexColor", false) end -- don't use per-vertex colours!
     
     love.graphics.setColor(wnd.shadow)
     love.graphics.draw(mesh,
@@ -114,7 +114,7 @@ function Background:drawSolid(wnd)
   love.graphics.setColor(color)
   
   local mesh = self.Meshes.Internal.Base
-  if mesh:hasVertexColors() then mesh:setVertexColors(false) end -- don't use per-vertex colours!
+  if mesh:isAttributeEnabled("VertexColor") then mesh:setAttributeEnabled("VertexColor", false) end -- don't use per-vertex colours!
   
   love.graphics.draw(mesh,
     wnd.left, wnd.top, 0,
@@ -127,8 +127,10 @@ function Background:drawFourCorner(wnd)
     self.color = { self.color } --wrap it inside a table of colours!
   end
   
+  love.graphics.setColor(255, 255, 255, 255) -- reset colour so the vertex colours are as expected
+
   local mesh = self.Meshes.Internal.Base
-  if not mesh:hasVertexColors() then mesh:setVertexColors(true) end -- use per-vertex colours!
+  if not mesh:isAttributeEnabled("VertexColor") then mesh:setAttributeEnabled("VertexColor", true) end -- use per-vertex colours!
   
   -- set each vertex colour from the first 4 colours in self.color
   for i = 1, 4 do
@@ -142,14 +144,14 @@ function Background:drawFourCorner(wnd)
     mesh:setVertex(i, x, y, u, v, r, g, b, a)
   end
   
-  love.graphics.setShader(self.Effects.Internal.QuantizeInterpolation)
+  --love.graphics.setShader(self.Effects.Internal.QuantizeInterpolation)
   
   love.graphics.draw(mesh,
     wnd.left, wnd.top, 0,
     wnd.width / Background.BaseMeshSize,
     wnd.height / Background.BaseMeshSize)
   
-  love.graphics.setShader()
+  --love.graphics.setShader()
 end
 
 setmetatable(Background, { __call = function (self, back) return self:new(back) end})

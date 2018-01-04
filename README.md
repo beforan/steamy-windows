@@ -27,7 +27,7 @@ As it grows, it should be usable for:
 It is never planned to be mouse controllable.
 
 ## How do I use it?
-You need to use it in a project targeting LÖVE  `0.9.0+`
+You need to use it in a project targeting LÖVE  `0.10.0+`
 
 ```lua
 -- require the Window "class"

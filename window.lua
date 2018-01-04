@@ -12,7 +12,7 @@ local Window = {
   width = 150,
   height = 50,
   autosize = false,
-  maxwidth = love.window.getWidth() / 2,
+  maxwidth = love.graphics.getWidth() / 2,
   
   padding = 10,
   align = "left",
